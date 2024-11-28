@@ -20,18 +20,17 @@ import {
   TableRow,
   Text,
   ToggleGroup,
-  hubspot
-} from "@hubspot/ui-extensions";
+  hubspot,
+} from '@hubspot/ui-extensions';
 import _ from 'lodash';
 import moment from 'moment';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 
 import {
   CrmActionButton,
   CrmActionLink,
-  CrmCardActions
+  CrmCardActions,
 } from '@hubspot/ui-extensions/crm';
-
 
 const ITEMS_PER_PAGE = 10;
 
@@ -46,7 +45,6 @@ hubspot.extend(({ context, runServerlessFunction, actions }) => (
 ));
 
 const Extension = ({ context, runServerless, sendAlert, fetchProperties }) => {
-
   const [locations, setLocations] = useState([]);
   const [locationsOnPage, setLocationsOnPage] = useState([]);
   const [vehicles, setVehicles] = useState([]);
@@ -58,8 +56,7 @@ const Extension = ({ context, runServerless, sendAlert, fetchProperties }) => {
 
   const [locationPage, setLocationPage] = useState(1);
 
-  const [zipCode, setZipCode] = useState("");
-
+  const [zipCode, setZipCode] = useState('');
 
   const [currentPage, setCurrentPage] = useState(1); // For controlling current page
   const [numPages, setNumPages] = useState(0); // For storing the total number of pages
@@ -83,23 +80,22 @@ const Extension = ({ context, runServerless, sendAlert, fetchProperties }) => {
     currentPage * ITEMS_PER_PAGE
   );
 
-
-
   function fetchLocations() {
-    sendAlert({ message: "Fetching locations...", type: "info" });
+    sendAlert({ message: 'Fetching locations...', type: 'info' });
     setLocationFetching(true);
-    runServerless({ name: "getLocations", parameters: { "zipCode": zipCode } }).then((resp) => {
+    runServerless({
+      name: 'getLocations',
+      parameters: { zipCode: zipCode },
+    }).then((resp) => {
       setLocations(resp.response.results);
       setLocationCount(resp.response.total);
       setLocationFetching(false);
       //reset the table
       setLocationPage(1);
-    })
-
+    });
   }
 
   const debouncedFetchLocations = _.debounce(fetchLocations, 500);
-
 
   return (
     <>
@@ -123,9 +119,7 @@ const Extension = ({ context, runServerless, sendAlert, fetchProperties }) => {
           </Button>
         </Flex>
         <Divider />
-        <Text>
-          {locationFetching && <LoadingSpinner />}
-        </Text>
+        <Text>{locationFetching && <LoadingSpinner />}</Text>
       </Flex>
       <Table
         bordered={true}
@@ -148,16 +142,24 @@ const Extension = ({ context, runServerless, sendAlert, fetchProperties }) => {
                   <CrmActionLink
                     actionType="PREVIEW_OBJECT"
                     actionContext={{
-                      objectTypeId: "2-19860301",
-                      objectId: location.id
+                      objectTypeId: '2-135933585',
+                      objectId: location.id,
                     }}
                     variant="secondary"
                   >
                     {location.properties.postal_code}
                   </CrmActionLink>
                 </TableCell>
-                <TableCell>{location.properties.address_1 + " " + location.properties.city + ", " + location.properties.state}</TableCell>
-                <TableCell>{location.properties.number_of_available_vehicles}</TableCell>
+                <TableCell>
+                  {location.properties.address_1 +
+                    ' ' +
+                    location.properties.city +
+                    ', ' +
+                    location.properties.state}
+                </TableCell>
+                <TableCell>
+                  {location.properties.number_of_available_vehicles}
+                </TableCell>
               </TableRow>
             );
           })}
