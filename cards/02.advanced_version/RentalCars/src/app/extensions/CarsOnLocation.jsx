@@ -5,7 +5,7 @@ hubspot.extend(() => <Extension />);
 const Extension = () => {
   return (
     <CrmAssociationTable
-      objectTypeId="2-135933585"
+      objectTypeId="2-135933945"
       propertyColumns={['make', 'model', 'year', 'vin']}
       quickFilterProperties={['createdate']}
       pageSize={10}

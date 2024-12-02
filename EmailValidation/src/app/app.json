@@ -1,0 +1,22 @@
+{
+  "name": "Email Validation",
+  "description": "",
+  "uid": "email_validation",
+  "scopes": [
+    "crm.objects.contacts.read",
+    "crm.objects.contacts.write",
+    "crm.objects.deals.read",
+    "crm.objects.deals.write",
+    "collector.graphql_query.execute"
+  ],
+  "public": false,
+  "extensions": {
+    "crm": {
+      "cards": [
+        {
+          "file": "extensions/deals-summary-example-card.json"
+        }
+      ]
+    }
+  }
+}
