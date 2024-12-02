@@ -1,4 +1,4 @@
-const axios = require("axios");
+const axios = require('axios');
 
 // Factor the distance calculation into its own function.
 function calculateDistance(a, b) {
@@ -13,9 +13,9 @@ function calculateDistance(a, b) {
   // Haversine formula
   const differenceLat = lat2 - lat1;
   const differenceLng = lng2 - lng1;
-  const aHav = Math.pow(Math.sin(differenceLat / 2), 2) +
-    Math.cos(lat1) * Math.cos(lat2) *
-    Math.pow(Math.sin(differenceLng / 2), 2);
+  const aHav =
+    Math.pow(Math.sin(differenceLat / 2), 2) +
+    Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(differenceLng / 2), 2);
   const c = 2 * Math.atan2(Math.sqrt(aHav), Math.sqrt(1 - aHav));
 
   // Distance in miles
@@ -28,13 +28,18 @@ function sortLocations(locations, originCoords, miles) {
   let sortedLocations = [...locations];
 
   // Adding distance to each location, and sort by chosen criteria.
-  sortedLocations = sortedLocations.map(location => {
-    const distance = calculateDistance({ lat: location.lat, lng: location.lng }, originCoords);
+  sortedLocations = sortedLocations.map((location) => {
+    const distance = calculateDistance(
+      { lat: location.lat, lng: location.lng },
+      originCoords
+    );
     return { ...location, distance: distance.toFixed(2) };
   });
 
   // Filter by distance
-  sortedLocations = sortedLocations.filter(location => location.distance <= miles);
+  sortedLocations = sortedLocations.filter(
+    (location) => location.distance <= miles
+  );
 
   // Sort by distance
   sortedLocations.sort((a, b) => a.distance - b.distance);
@@ -43,9 +48,17 @@ function sortLocations(locations, originCoords, miles) {
 }
 
 // Extract API calls into a separate function for readability.
-function fetchLocations({ lat_min, lat_max, lng_min, lng_max, pickupDate, returnDate, vehicleClass }) {
+function fetchLocations({
+  lat_min,
+  lat_max,
+  lng_min,
+  lng_max,
+  pickupDate,
+  returnDate,
+  vehicleClass,
+}) {
   const data = JSON.stringify({
-    operationName: "getLocations",
+    operationName: 'getLocations',
     query: `query getLocations($lat_min: Number, $lat_max: Number, $lng_min: Number, $lng_max: Number) {
       CRM {
         p_locations_collection(filter: {lat__gt: $lat_min, lat__lt: $lat_max, lng__gt: $lng_min, lng__lt: $lng_max}, limit: 500) {
@@ -57,7 +70,7 @@ function fetchLocations({ lat_min, lat_max, lng_min, lng_max, pickupDate, return
             number_of_available_vehicles
             hs_object_id
             associations {
-              all_vehicles: p_vehicles_collection__vehicles_to_locations {
+              all_vehicles: p_vehicles_collection__locations_to_vehicles {
                 items {
                   hs_object_id
                   model
@@ -71,14 +84,14 @@ function fetchLocations({ lat_min, lat_max, lng_min, lng_max, pickupDate, return
       }
     }`,
     variables: {
-      "lat_min": lat_min,
-      "lat_max": lat_max,
-      "lng_min": lng_min,
-      "lng_max": lng_max,
-      "pickupDate": pickupDate,
-      "returnDate": returnDate,
-      "vehicleClass": vehicleClass
-    }
+      lat_min: lat_min,
+      lat_max: lat_max,
+      lng_min: lng_min,
+      lng_max: lng_max,
+      pickupDate: pickupDate,
+      returnDate: returnDate,
+      vehicleClass: vehicleClass,
+    },
   });
 
   const config = {
@@ -86,9 +99,9 @@ function fetchLocations({ lat_min, lat_max, lng_min, lng_max, pickupDate, return
     url: 'https://api.hubapi.com/collector/graphql',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env['PRIVATE_APP_ACCESS_TOKEN']}`,
+      Authorization: `Bearer ${process.env['PRIVATE_APP_ACCESS_TOKEN']}`,
     },
-    data: data
+    data: data,
   };
 
   return axios.request(config);
@@ -96,12 +109,12 @@ function fetchLocations({ lat_min, lat_max, lng_min, lng_max, pickupDate, return
 
 exports.main = async (context, sendResponse) => {
   try {
+    const { miles, geography, pickupDate, returnDate, vehicleClass } =
+      context.parameters;
 
-    const { miles, geography, pickupDate, returnDate, vehicleClass } = context.parameters;
+    console.log('Parameters: ', context.parameters);
 
-    console.log(context.parameters)
-
-    const geoLocation = geography
+    const geoLocation = geography;
 
     const latBounds = miles / 69;
     const lngBounds = miles / 54.6;
@@ -111,8 +124,16 @@ exports.main = async (context, sendResponse) => {
     const lng_min = geoLocation.lng - lngBounds;
     const lng_max = geoLocation.lng + lngBounds;
 
-    const response = await fetchLocations({ lat_min, lat_max, lng_min, lng_max, pickupDate, returnDate, vehicleClass });
-    console.log(JSON.stringify(response.data))
+    const response = await fetchLocations({
+      lat_min,
+      lat_max,
+      lng_min,
+      lng_max,
+      pickupDate,
+      returnDate,
+      vehicleClass,
+    });
+    console.log('Response: ', JSON.stringify(response.data));
 
     const sortedLocations = sortLocations(
       response.data.data.CRM.p_locations_collection.items,
@@ -120,7 +141,10 @@ exports.main = async (context, sendResponse) => {
       miles
     );
 
-    return { results: sortedLocations, total: response.data.data.CRM.p_locations_collection.total };
+    return {
+      results: sortedLocations,
+      total: response.data.data.CRM.p_locations_collection.total,
+    };
   } catch (error) {
     console.error(error);
     return { error: error.message };
